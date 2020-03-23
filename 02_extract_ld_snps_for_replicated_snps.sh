@@ -1,0 +1,3 @@
+
+plink --bfile /home/common/DataStorage/1kg_503_EUR_82M_SNP_ref/1kg_503_eur_82M_ref  --chr 2,3,11,17 --out /home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/snps_in_ld_with_5_replicated_snps.txt --show-tags /home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/5_replicated_snps.txt --tag-r2 0.8 --threads 5                                                                   
+                 
