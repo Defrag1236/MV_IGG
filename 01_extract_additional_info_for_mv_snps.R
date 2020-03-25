@@ -3,24 +3,25 @@
 
 # load data
 
+mv_snps <-  read.table("/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/clumping/general_clumping/Clumping_9_mv_traits.txt", head=T, stringsAsFactors=F)
 
-load("/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_sst_23traits.Rdata")
+library(data.table)
 
-mv_snps <-  read.table("/home/common/projects/Multivariate_analysis_IgG/results/clumping/clumping_merge/Clumping_9_mv_traits.txt", head=T, stringsAsFactors=F)
+IGP1 <- fread(file="/mnt/polyomica/projects/for_igg/data/IGP1.csv", head=T, stringsAsFactors=F, sep="\t", data.table=F)
 
 
 
 # make table for mv
 
-idnames_mv <- c('/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_N_glycosylation.Rdata',
-	'/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_monogalactosylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_digalactosylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_galactosylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_monosialylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_disialylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_sialylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_fucosylation.Rdata',
- '/home/common/projects/Multivariate_analysis_IgG/results/Rdata/20170208_multi_bisectingGlcNAc.Rdata')
+idnames_mv <- c('/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_N_glycosylation.Rdata',
+	'/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_monogalactosylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_digalactosylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_galactosylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_monosialylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_disialylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_sialylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_fucosylation.Rdata',
+ '/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/multi_bisectingGlcNAc.Rdata')
 
 names_mv <- c("multi_N_glycosylation", "multi_monogalactosylation", "multi_digalactosylation", "multi_galactosylation",
 	"multi_monosialylation", "multi_disialylation", "multi_sialylation", "multi_fucosylation", "multi_bisectingGlcNAc")
@@ -58,12 +59,12 @@ alleles_mv <- matrix(ncol=2, nrow=nrow(mv_snps))
 
 for ( n in (1:nrow(mv_snps))) {
 
-	alleles_mv[n,] <- as.matrix(sst$alleles[(which(mv_snps$SNP[n]==rownames(sst$alleles))),1:2])
+	alleles_mv[n,] <- as.matrix(IGP1[(which(mv_snps$SNP[n]==IGP1[,2])),6:7])
 
 	}
 
 
 mv_final_table <- cbind(mv_snps, extr_info[,c(2:3,5,6)], alleles_mv)
-colnames(mv_final_table)[12:13] <- c("A1", "A2")
 
-write.table(mv_final_table, "/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/MV_9_traits_clumping_with_beta_se_n_freq_alleles.txt", col.names=T, row.names=F, quote=F)
+
+write.table(mv_final_table, "/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/clumping/general_clumping/MV_9_traits_clumping_with_beta_se_n_freq_alleles.txt", col.names=T, row.names=F, quote=F)
