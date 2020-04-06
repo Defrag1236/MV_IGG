@@ -107,4 +107,41 @@ b_coefs.repl.df <- cbind(b[ind,"marker"],b_coefs.repl.df)
 fwrite(b_coefs.repl.df, "./data/20200325_bisection_coefs_repl.csv")
 
 
+###############################################################################
+
+######################     Run MV analysis for FUCOSYLATION    ###############################
+
+###############################################################################
+
+
+multi_fucosylation <- MultiSummary(sst, index=c(1, 3, 5, 7:10, 13:15, 17, 18, 22, 23), type = "outbred")
+save(file='/mnt/polyomica/projects/MV_igg_replication/MANOVA/Rdata/20200407_multi_fucosylation_3K.Rdata', list=c("multi_fucosylation"))
+
+
+#fucosylation
+
+fucose <- multi_fucosylation$scan
+fucose_coefs <-  multi_fucosylation$coef
+rm(multi_fucosylation)
+
+## snps sign for fucosylation in discovery
+
+fucose_snps <- c("rs6964421", "rs540719", "rs7257072")
+
+fucose.repl <- fucose[fucose$marker %in% fucose_snps,]
+
+fucose.repl <- fucose.repl[,c(1:6)]
+fwrite(fucose.repl, "./data/20200407_fucosylation_repl_3K.csv") 
+
+## corresponding coefficients
+
+ind <- which(fucose$marker %in%  fucose_snps)
+fucose_coefs.repl <- fucose_coefs[ind,]
+
+fucose_coefs.repl.df <- as.data.frame(fucose_coefs.repl)
+a <- gsub("../3k_meta_23traits/meta_results/", "", names(fucose_coefs.repl.df))
+names(fucose_coefs.repl.df) <- a
+fucose_coefs.repl.df <- cbind(fucose[ind,"marker"],fucose_coefs.repl.df) 
+fwrite(fucose_coefs.repl.df, "./data/20200407_fucosylation_coefs_repl.csv")
+
 
