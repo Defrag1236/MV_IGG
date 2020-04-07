@@ -143,5 +143,35 @@ a <- gsub("../3k_meta_23traits/meta_results/", "", names(fucose_coefs.repl.df))
 names(fucose_coefs.repl.df) <- a
 fucose_coefs.repl.df <- cbind(fucose[ind,"marker"],fucose_coefs.repl.df) 
 fwrite(fucose_coefs.repl.df, "./data/20200407_fucosylation_coefs_repl.csv")
+###############################################################################
 
+######################     Run MV analysis for SYALYLATION    ###############################
 
+###############################################################################
+
+multi_sialylation <- MultiSummary(sst, index=c(15:18, 20:23), type = "outbred")
+save(file='/mnt/polyomica/projects/MV_igg_replication/MANOVA/Rdata/20200407_multi_sialylation_3K.Rdata', list=c("multi_sialylation"))
+
+### original sum stats list based on unmodified 3K GWASes
+
+s <- multi_sialylation$scan
+s_coefs <-  multi_sialylation$coef
+rm(multi_sialylation)
+
+## snps sign for galactosylation in discovery
+s_snps <- c("rs2745851")
+
+s.repl <-s[s$marker %in% s_snps,]
+
+s.repl <- s.repl[,c(1:6)]
+fwrite(s.repl, "./data/20200407_sialylation_repl_3K.csv") 
+
+## corresponding coefficients
+
+ind <- which(s$marker %in%  s_snps)
+s_coefs.repl <- s_coefs[ind,]
+s_coefs.repl.df <- as.data.frame(s_coefs.repl)
+a <- gsub("../3k_meta_23traits/meta_results/", "", names(s_coefs.repl.df))
+names(s_coefs.repl.df) <- a
+s_coefs.repl.df <- cbind(s[ind,"marker"],s_coefs.repl.df) 
+fwrite(s_coefs.repl.df, "./data/20200407_sialylation_coefs_repl.csv")
