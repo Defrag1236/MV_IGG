@@ -4,6 +4,8 @@
 
 ###############################################################################
 
+library(tidyr)
+library(dplyr)
 library(MultiABEL)
 
 ## load discovery gwases - object sst
