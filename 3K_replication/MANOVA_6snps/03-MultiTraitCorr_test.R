@@ -351,6 +351,188 @@ plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
 
 
+
+
+#############     Multi-Traits Correlation Replication Fucosylation     ###################
+
+traits <- paste0(paste0("IGP", c(1, 3, 5, 7:10, 13:15, 17, 18, 22, 23)), ".csv")
+
+#rs6964421
+
+set.seed(0)
+res_fucose1 <- MV.cor.test(marker = "rs6964421", gwa.1 = gwas_d, gwa.2 = gwas_r, R.1 = sst_d$cor.pheno,
+                          R.2 = sst_r$cor.pheno, traits = traits, plot=TRUE)
+
+ci_fucose1 <- as.data.frame(res_fucose1$res)
+
+
+pdf("./figs/Fucosylation_rs6964421.pdf", height=15, width=15)
+df.plot <- res_fucose1$df.plot
+p1 <- ggplot()+ 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
+  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
+  scale_size_continuous(range = c(3, 10)) +
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=14,face="bold"), 
+        strip.text.x = element_text(size = 16))+ 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
+        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
+        legend.title=element_text(size=14), 
+        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
+  scale_colour_discrete(name = "Traits")
+
+p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
+  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
+dev.off()
+
+
+
+#rs540719
+
+set.seed(64)
+res_fucose2 <- MV.cor.test(marker = "rs540719", gwa.1 = gwas_d, gwa.2 = gwas_r, R.1 = sst_d$cor.pheno,
+                           R.2 = sst_r$cor.pheno, traits = traits, plot=TRUE)
+
+ci_fucose2 <- as.data.frame(res_fucose2$res)
+
+
+pdf("./figs/Fucosylation_rs540719.pdf", height=15, width=15)
+df.plot <- res_fucose2$df.plot
+p1 <- ggplot()+ 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
+  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
+  scale_size_continuous(range = c(3, 10)) +
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=14,face="bold"), 
+        strip.text.x = element_text(size = 16))+ 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
+        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
+        legend.title=element_text(size=14), 
+        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
+  scale_colour_discrete(name = "Traits")
+
+p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
+  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
+dev.off()
+
+#rs7257072
+set.seed(834)
+res_fucose3 <- MV.cor.test(marker = "rs7257072", gwa.1 = gwas_d, gwa.2 = gwas_r, R.1 = sst_d$cor.pheno,
+                           R.2 = sst_r$cor.pheno, traits = traits, plot=TRUE)
+
+ci_fucose3 <- as.data.frame(res_fucose3$res)
+
+
+pdf("./figs/Fucosylation_rs7257072.pdf", height=15, width=15)
+df.plot <- res_fucose3$df.plot
+p1 <- ggplot()+ 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
+  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
+  scale_size_continuous(range = c(3, 10)) +
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=14,face="bold"), 
+        strip.text.x = element_text(size = 16))+ 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
+        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
+        legend.title=element_text(size=14), 
+        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
+  scale_colour_discrete(name = "Traits")
+
+p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
+  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
+  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
+dev.off()
+
+
+#############     Multi-Traits Correlation Replication Sialylation     ##################
+set.seed(8961)
+traits <- paste0(paste0("IGP", c(15:18, 20:23)), ".csv")
+# rs2745851
+
+
+res_sial<- MV.cor.test(marker = "rs2745851", gwa.1 = gwas_d, gwa.2 = gwas_r, R.1 = sst_d$cor.pheno,
+                                   R.2 = sst_r$cor.pheno, traits = traits, plot=TRUE)
+
+ci_sial <- as.data.frame(res_sial$res)
+
+
+pdf("./figs/Sialylation_rs2745851.pdf", height=15, width=15)
+df.plot <- res_sial$df.plot
+p1 <- ggplot()+ 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
+  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
+  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
+  coord_cartesian(xlim = c(0.5, 9), ylim = c(0.5, 9)) + xlim(0,200) + 
+  scale_size_continuous(range = c(3, 10)) +
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=14,face="bold"), 
+        strip.text.x = element_text(size = 16))+ 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
+        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
+        legend.title=element_text(size=14), 
+        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
+  scale_colour_discrete(name = "Traits")
+
+p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
+  coord_cartesian(xlim = c(0.5, 9), ylim = c(0, 9)) + 
+  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
+dev.off()
+
+
+
+
+
+
+
+
 ### correlations with 95% CIs
 ci_list <- lapply(ls(pattern="ci_*"), get)
 
