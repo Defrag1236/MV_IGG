@@ -4,9 +4,60 @@
 
 ###############################################################################
 
+         
+
 library(tidyr)
 library(dplyr)
 library(MultiABEL)
+require(ggplot2)
+require(cowplot)
+
+
+################# function for graphics #####################
+## before plotting - create a pdf file in the right directory 
+## named "Trait_snp.pdf"; ncomponents = number of components
+## of the multivariate trait
+
+plot_correlation_1 <- function(df.plot, ncomponents) {
+
+  p1 <- ggplot()+ 
+    geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
+    geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
+    stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
+    coord_cartesian(xlim = c(0.5, (ncomponents + 1)), ylim = c(0.5, (ncomponents + 1))) + xlim(0,200) + 
+    scale_size_continuous(range = c(3, 10)) +
+    theme(axis.text=element_text(size=10),
+          axis.title=element_text(size=14,face="bold"), 
+          strip.text.x = element_text(size = 16))+ 
+    theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
+          legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
+          legend.title=element_text(size=14), 
+          legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
+    guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
+    scale_colour_discrete(name = "Traits")
+  
+  return(p1)
+}
+                             
+plot_correlation_2 <- function(df.plot, ncomponents){
+  p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
+    coord_cartesian(xlim = c(0.5, (ncomponents + 1)), ylim = c(0, (ncomponents + 1))) + 
+    geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
+      strip.background = element_blank(),
+      strip.text.x = element_blank()
+    ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
+    theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+return(p2)
+}
+
+###############################################################################
+
+##############################    Analyses     ###############################
+
+###############################################################################
 
 ## load discovery gwases - object sst
 load('/home/common/projects/Multivariate_analysis_IgG/2020_work_for_paper/results/Rdata/23_igg_sst.Rdata')
@@ -84,11 +135,6 @@ colnames(gwas_r)[(dim(gwas_r)[2]-1):dim(gwas_r)[2]] <- c("A1", "A2")
 
 ###############################################################################
 
-
-require(ggplot2)
-require(cowplot)
-
-
 #############     Multi-Traits Correlation Replication BISECTION     ###################
 
 
@@ -107,35 +153,14 @@ ci_bisect <- as.data.frame(res_bisect$res)
 
 pdf("./figs/Bisection_rs11895615.pdf", height=15, width=15)
 df.plot <- res_bisect$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 8), ylim = c(0.5, 8)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 8), ylim = c(0, 18)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
+
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
+
 
 #############     Multi-Traits Correlation Replication N-glycosylation     ##################
 traits <- paste0(paste0("IGP", c(1:23)), ".csv")
@@ -150,32 +175,10 @@ ci_Nglyc_rs1372288 <- as.data.frame(res_Nglyc_rs1372288$res)
 
 pdf("./figs/Nglycosylation_rs1372288.pdf", height=15, width=15)
 df.plot <- res_Nglyc_rs1372288$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0.5, 29)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0, 24)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
+
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -191,35 +194,13 @@ ci_Nglyc_rs4561508 <- as.data.frame(res_Nglyc_rs4561508$res)
 
 pdf("./figs/Nglycosylation_rs4561508.pdf", height=15, width=15)
 df.plot <- res_Nglyc_rs4561508$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0.5, 29)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0, 24)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
+
 
 ### rs12635457
 set.seed(5923)
@@ -232,32 +213,11 @@ ci_Nglyc_rs12635457 <- as.data.frame(res_Nglyc_rs12635457$res)
 
 pdf("./figs/Nglycosylation_rs12635457.pdf", height=15, width=15)
 df.plot <- res_Nglyc_rs12635457$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 30), ylim = c(0.5, 24)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0, 24)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
+
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -274,32 +234,9 @@ ci_Nglyc_rs479844 <- as.data.frame(res_Nglyc_rs479844$res)
 
 pdf("./figs/Nglycosylation_rs479844.pdf", height=15, width=15)
 df.plot <- res_Nglyc_rs479844$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 30), ylim = c(0.5, 24)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 24), ylim = c(0, 24)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -320,32 +257,11 @@ ci_gal <- as.data.frame(res_gal$res)
 
 pdf("./figs/Galactosylation_rs12049042.pdf", height=15, width=15)
 df.plot <- res_gal$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 18), ylim = c(0.5, 18)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 18), ylim = c(0, 18)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
+
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -368,32 +284,11 @@ ci_fucose1 <- as.data.frame(res_fucose1$res)
 
 pdf("./figs/Fucosylation_rs6964421.pdf", height=15, width=15)
 df.plot <- res_fucose1$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
+
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -411,32 +306,10 @@ ci_fucose2 <- as.data.frame(res_fucose2$res)
 
 pdf("./figs/Fucosylation_rs540719.pdf", height=15, width=15)
 df.plot <- res_fucose2$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -451,32 +324,10 @@ ci_fucose3 <- as.data.frame(res_fucose3$res)
 
 pdf("./figs/Fucosylation_rs7257072.pdf", height=15, width=15)
 df.plot <- res_fucose3$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0.5, 15)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 15), ylim = c(0, 18)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
@@ -496,39 +347,13 @@ ci_sial <- as.data.frame(res_sial$res)
 
 pdf("./figs/Sialylation_rs2745851.pdf", height=15, width=15)
 df.plot <- res_sial$df.plot
-p1 <- ggplot()+ 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits), size=2) + 
-  geom_point(data=df.plot, mapping=aes(x=rank.1, y=rank.2, color=traits, size = se.beta), alpha = 0.2) + 
-  stat_smooth(data=df.plot, mapping=aes(x=rank.1, y=rank.2), method = "lm", se=FALSE, color="black", size=0.3, fullrange = TRUE) + 
-  coord_cartesian(xlim = c(0.5, 9), ylim = c(0.5, 9)) + xlim(0,200) + 
-  scale_size_continuous(range = c(3, 10)) +
-  theme(axis.text=element_text(size=10),
-        axis.title=element_text(size=14,face="bold"), 
-        strip.text.x = element_text(size = 16))+ 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank(), legend.position = c(0.8,0.3), 
-        legend.background=element_rect(colour='NA', fill='transparent'), legend.key=element_blank(), 
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=12), legend.key.size = unit(1.4, 'lines')) + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1)), size = FALSE) +
-  scale_colour_discrete(name = "Traits")
+p1 <- plot_correlation_1(df.plot = df.plot, ncomponents = length(traits))
 
-p2 <- ggplot(data=df.plot, aes(x=rank.1,y=mean.conc)) +
-  coord_cartesian(xlim = c(0.5, 9), ylim = c(0, 9)) + 
-  geom_bar(stat = "identity", aes(fill=traits), width = 0.4) + theme(legend.position="none") + theme(
-    strip.background = element_blank(),
-    strip.text.x = element_blank()
-  ) + geom_errorbar(aes(ymin = mean.conc - sd.conc,ymax = mean.conc + sd.conc), width = 0.1)  + 
-  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),axis.title.y=element_blank()) + 
-  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+p2 <- plot_correlation_2(df.plot = df.plot, ncomponents = length(traits)) 
+
 
 plot_grid(p1,p2,ncol=1,align = "v", rel_heights = c(2,1))
 dev.off()
-
-
-
-
 
 
 
